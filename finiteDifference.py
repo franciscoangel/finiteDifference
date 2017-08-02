@@ -1,6 +1,32 @@
+"""
+	Classes for generating finite difference expressions for derivatives.
+
+	Classes:
+    --------
+
+	GridPoint: Expression that represents function evaluation at a certain point.
+	Num: Numerator of a finite difference expression.
+	Den: Denominator of a finite difference expression.
+	FinDiff: Finite difference expression of a derivative.
+"""
 
 class GridPoint(object):
-	def __init__(self, coeff=1, ind=0):
+	"""
+		 Evaluation of a function at a certain point: coeff*f(i+ind)
+
+	Examples:
+	--------
+
+		>>> import finiteDifference as fd		
+		>>> a=fd.GridPoint()
+		>>> print(a)
+  			1.0*f(i)
+		>>> b=fd.GridPoint(coeff=2,ind=3)
+		>>> print(b)
+  			2.0*f(i+3)
+	"""
+	def __init__(self, coeff = 1, ind = 0):
+
 		self.ind = ind
 		self.coeff = coeff
 		if ind < 0:
@@ -16,7 +42,21 @@ class GridPoint(object):
 
 
 class Den(object):
-	def __init__(self, power=1):
+	"""
+		Denominator of a finite difference approximation.
+
+	Examples:
+	--------
+
+	>>> import finiteDifference as fd		
+	>>> a=fd.Den()
+	>>> print(a)
+		(dh)^1
+	>>> b=fd.Den(power=2)
+	>>> print(b)
+		(dh)^2
+	"""
+	def __init__(self, power = 1):
 		self.power = power
 
 	def __str__(self):
@@ -24,8 +64,32 @@ class Den(object):
 
 
 class Num(object):
-	def __init__(self, exp=None):
-		#exp=list of GridPoint elements
+	"""
+		Numerator of a finite difference approximation. Created from a list of grid points.
+		It simplifies similar terms at the moment it is created.
+
+	Examples:
+	--------
+
+	>>> import finiteDifference as fd		
+	>>> a=fd.Num([fd.GridPoint(coeff=2.0,ind=2),fd.GridPoint(coeff=-1,ind=2),fd.GridPoint()])
+	>>> print(a)
+  		1.0*f(i+2)+  1.0*f(i)
+
+	Numerators can be added can also be added.
+
+	>>> a=fd.Num([fd.GridPoint(ind=2)])
+	>>> b=fd.Num([fd.GridPoint(ind=1)])
+	>>> c=a+b
+	>>> print(a)
+  		1.0*f(i+2)
+	>>> print(b)
+	  	1.0*f(i+1)
+	>>> print(c)
+  		1.0*f(i+2)+  1.0*f(i+1)
+
+	"""
+	def __init__(self, exp = None):
 		if exp is None:
 			self.exp = []
 		else:
@@ -36,9 +100,6 @@ class Num(object):
 		return Num(exp=self.exp+num2.exp)
 
 	def simplify(self):
-		"""
-		:rtype: Num
-		"""
 		temp = [self.exp[0]]
 		for gP in self.exp[1:]:
 			for i, gPtemp in enumerate(temp):
@@ -60,9 +121,27 @@ class Num(object):
 
 
 class FinDiff(object):
-    # Type: forward,backward,central
-	def __init__(self, method, order, point):
-		# point: gridPoint
+	"""
+		Finite difference approximation around a specified grid point.
+		The approximation is computed using one of the following methods:
+		'backward', 'forward', 'central'
+	
+	Contains the following attributes:
+
+	numer: Instance of finiteDifference.Num class.
+	denom: Instance of finiteDifference.Den class.
+
+	Examples:
+	--------
+
+	>>> import finiteDifference as fd
+	>>> a=fd.FinDiff()
+	>>> print(a.numer)
+	  	0.5*f(i+1)+  0.0*f(i) -0.5*f(i-1)
+	>>> print(a.denom)
+		(dh)^1
+	"""
+	def __init__(self, method = 'central', order = 1, point = GridPoint()):
 		self.method = method
 		self.order = order
 		self.point = point
